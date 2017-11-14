@@ -16,13 +16,13 @@ const makerPage = (req, res) => {
 const makeDomo = (req, res) => {
   if (!req.body.name || !req.body.age || !req.body.level) {
     return res.status(400).json(
-	  { error: 'RAWR! Name, Age, and Level are required' });
+    { error: 'RAWR! Name, Age, and Level are required' });
   }
 
   const domoData = {
     name: req.body.name,
     age: req.body.age,
-	level: req.body.level,
+    level: req.body.level,
     owner: req.session.account._id,
   };
 

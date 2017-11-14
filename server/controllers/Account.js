@@ -111,15 +111,16 @@ const passwordChange = (request, response) => {
         username: req.body.username,
         salt,
         password: hash,
-		_id: req.session.account._id,
+        _id: req.session.account._id,
       };
 
 
-	  Account.AccountModel.removeByUsername(req.body.username, (err, account) => {
-    if (err || !account) {
-      return res.status(401).json({ error: 'Failed to change' });
-	    }
-	  });
+      Account.AccountModel.removeByUsername(req.body.username, (errr, accountt) => {
+        if (errr || !accountt) {
+          return res.status(401).json({ error: 'Failed to change' });
+        }
+        return accountt;
+      });
 
       const newAccount = new Account.AccountModel(accountData);
 
@@ -130,10 +131,10 @@ const passwordChange = (request, response) => {
         res.json({ redirect: '/maker' });
       });
 
-      savePromise.catch((err) => {
-        console.log(err);
+      savePromise.catch((errrr) => {
+        console.log(errrr);
 
-        if (err.code === 11000) {
+        if (errrr.code === 11000) {
           return res.status(400).json({ error: 'Username already in use.' });
         }
 
