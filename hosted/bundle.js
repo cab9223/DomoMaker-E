@@ -1,11 +1,82 @@
 "use strict";
 
+var handlePassword = function handlePassword(e) {
+  e.preventDefault();
+  $("#domoMessage").animate({ width: 'hide' }, 350);
+
+  if ($("#oldPass").val() == '' || $("#pass").val() == '' || $("pass2").val() == '') {
+    handleError("RAWR: All fields are required");
+    return false;
+  }
+
+  if ($("#pass").val() !== $("#pass2").val()) {
+    handleError("RAWR: Passwords do not match");
+    return false;
+  }
+
+  sendAjax('POST', $("#passwordForm").attr("action"), $("#passwordForm").serialize(), redirect);
+
+  return false;
+};
+
+var PasswordWindow = function PasswordWindow(props) {
+  return React.createElement(
+    "form",
+    { id: "passwordForm",
+      name: "passwordForm",
+      onSubmit: handlePassword,
+      action: "/passwordChange",
+      method: "POST",
+      className: "mainForm"
+    },
+    React.createElement(
+      "label",
+      { htmlFor: "oldPass" },
+      "Old Password: "
+    ),
+    React.createElement("input", { id: "oldPass", type: "password", name: "oldPass", placeholder: "old passwold" }),
+    React.createElement(
+      "label",
+      { htmlFor: "pass" },
+      "Password: "
+    ),
+    React.createElement("input", { id: "pass", type: "password", name: "pass", placeholder: "password" }),
+    React.createElement(
+      "label",
+      { htmlFor: "pass2" },
+      "Password: "
+    ),
+    React.createElement("input", { id: "pass2", type: "password", name: "pass2", placeholder: "retype password" }),
+    React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
+    React.createElement("input", { className: "formSubmit", type: "submit", value: "Submit" })
+  );
+};
+
+var createPasswordWindow = function createPasswordWindow(csrf) {
+
+  ReactDOM.render(React.createElement("div", null), document.querySelector("#makeDomo"));
+
+  ReactDOM.render(React.createElement("div", null), document.querySelector("#domos"));
+
+  ReactDOM.render(React.createElement(PasswordWindow, { csrf: csrf }), document.querySelector("#content"));
+};
+
+var createDomoWindow = function createDomoWindow(csrf) {
+  ReactDOM.render(React.createElement("div", null), document.querySelector("#content"));
+
+  ReactDOM.render(React.createElement(DomoForm, { csrf: csrf }), document.querySelector("#makeDomo"));
+
+  ReactDOM.render(React.createElement(DomoForm, { domos: [] }), document.querySelector("#domos"));
+
+  loadDomosFromServer();
+};
+
 var handleDomo = function handleDomo(e) {
   e.preventDefault();
 
   $("#domoMessage").animate({ width: 'hide' }, 350);
 
-  if ($("#domoName").val() == '' || $("#domoAge").val() == '') {
+  if ($("#domoName").val() == '' || $("#domoAge").val() == '' || $("#domoLevel").val() == '') {
     handleError("RAWR! All fields are required");
     return false;
   };
@@ -39,6 +110,12 @@ var DomoForm = function DomoForm(props) {
       "Age: "
     ),
     React.createElement("input", { id: "domoAge", type: "text", name: "age", placeholder: "Domo Age" }),
+    React.createElement(
+      "label",
+      { htmlFor: "level" },
+      "Level: "
+    ),
+    React.createElement("input", { id: "domoLevel", type: "text", name: "level", placeholder: "Domo Level" }),
     React.createElement("input", { type: "hidden", name: "_csrf", value: props.csrf }),
     React.createElement("input", { className: "makeDomoSubmit", type: "submit", value: "Make Domo" })
   );
@@ -75,6 +152,13 @@ var DomoList = function DomoList(props) {
         " Age: ",
         domo.age,
         " "
+      ),
+      React.createElement(
+        "h3",
+        { className: "domoLevel" },
+        " Level: ",
+        domo.level,
+        " "
       )
     );
   });
@@ -93,11 +177,22 @@ var loadDomosFromServer = function loadDomosFromServer() {
 };
 
 var setup = function setup(csrf) {
-  ReactDOM.render(React.createElement(DomoForm, { csrf: csrf }), document.querySelector("#makeDomo"));
+  var passwordButton = document.querySelector("#passwordButton");
+  var domoButton = document.querySelector("#maker");
 
-  ReactDOM.render(React.createElement(DomoForm, { domos: [] }), document.querySelector("#domos"));
+  passwordButton.addEventListener("click", function (e) {
+    e.preventDefault();
+    createPasswordWindow(csrf);
+    return false;
+  });
 
-  loadDomosFromServer();
+  domoButton.addEventListener("click", function (e) {
+    e.preventDefault();
+    createDomoWindow(csrf);
+    return false;
+  });
+
+  createDomoWindow(csrf); //default view
 };
 
 var getToken = function getToken() {

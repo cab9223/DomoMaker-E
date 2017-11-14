@@ -1,9 +1,85 @@
+const handlePassword = (e) => {
+  e.preventDefault();
+  $("#domoMessage").animate({width:'hide'},350);
+  
+  if($("#oldPass").val() == '' || $("#pass").val() == '' || $("pass2").val() == '') {
+    handleError("RAWR: All fields are required");
+	return false;
+  }
+  
+  if($("#pass").val() !== $("#pass2").val()) {
+    handleError("RAWR: Passwords do not match");
+	return false;
+  } 
+
+  sendAjax('POST', $("#passwordForm").attr("action"), $("#passwordForm").serialize(), redirect);
+
+  return false;
+};  
+
+
+
+const PasswordWindow = (props) => {
+  return (
+    <form id="passwordForm"
+	  name="passwordForm"
+	  onSubmit={handlePassword}
+	  action="/passwordChange"
+	  method="POST"
+	  className="mainForm"
+	>
+	  <label htmlFor="oldPass">Old Password: </label>
+	  <input id="oldPass" type="password" name="oldPass" placeholder="old passwold"/>
+	  <label htmlFor="pass">Password: </label>
+	  <input id="pass" type="password" name="pass" placeholder="password"/>
+	  <label htmlFor="pass2">Password: </label>
+	  <input id="pass2" type="password" name="pass2" placeholder="retype password"/>
+	  <input type="hidden" name="_csrf" value={props.csrf} />
+	  <input className="formSubmit" type="submit" value="Submit" />
+	
+	</form>
+  );
+};
+
+
+const createPasswordWindow = (csrf) => {
+	
+  ReactDOM.render(
+    <div />, document.querySelector("#makeDomo")
+  );
+  
+  ReactDOM.render(
+    <div />, document.querySelector("#domos")
+  );
+	
+  ReactDOM.render(
+    <PasswordWindow csrf={csrf} />,
+	document.querySelector("#content")
+  );
+};
+
+const createDomoWindow = (csrf) => {
+  ReactDOM.render(
+    <div />, document.querySelector("#content")
+  );
+	
+  ReactDOM.render(
+    <DomoForm csrf={csrf} />, document.querySelector("#makeDomo")
+  );
+  
+  ReactDOM.render(
+    <DomoForm domos={[]} />, document.querySelector("#domos")
+  );
+  
+  loadDomosFromServer();
+};
+
 const handleDomo = (e) => {
   e.preventDefault();
   
   $("#domoMessage").animate({width:'hide'},350);
   
-  if($("#domoName").val() == '' || $("#domoAge").val() == '') {
+  if($("#domoName").val() == '' || $("#domoAge").val() == '' || $("#domoLevel").val() == '') {
     handleError("RAWR! All fields are required");
 	return false;
   };
@@ -28,6 +104,8 @@ const DomoForm = (props) => {
 	  <input id="domoName" type="text" name="name" placeholder="Domo Name"/>
 	  <label htmlFor="age">Age: </label>
 	  <input id="domoAge" type="text" name="age" placeholder="Domo Age"/>
+	  <label htmlFor="level">Level: </label>
+	  <input id="domoLevel" type="text" name="level" placeholder="Domo Level"/>
 	  <input type="hidden" name="_csrf" value={props.csrf} />
 	  <input className="makeDomoSubmit" type="submit" value="Make Domo"/>
 	</form>
@@ -49,6 +127,7 @@ const DomoList = function(props) {
 	    <img src="/assets/img/domoface.jpeg" alt="domo face" className="domoFace" />
 		<h3 className="domoName"> Name: {domo.name} </h3>
 		<h3 className="domoAge"> Age: {domo.age} </h3>
+		<h3 className="domoLevel"> Level: {domo.level} </h3>
 	  </div>
     );
   });
@@ -69,15 +148,23 @@ const loadDomosFromServer = () => {
 };
 
 const setup = function(csrf) {
-  ReactDOM.render(
-    <DomoForm csrf={csrf} />, document.querySelector("#makeDomo")
-  );
+  const passwordButton = document.querySelector("#passwordButton");
+  const domoButton = document.querySelector("#maker");
   
-  ReactDOM.render(
-    <DomoForm domos={[]} />, document.querySelector("#domos")
-  );
+  passwordButton.addEventListener("click", (e) => {
+    e.preventDefault();
+	createPasswordWindow(csrf);
+	return false;
+  });
   
-  loadDomosFromServer();
+  domoButton.addEventListener("click", (e) => {
+    e.preventDefault();
+	createDomoWindow(csrf);
+	return false;
+  });
+	
+  createDomoWindow(csrf); //default view
+  
 };
 
 const getToken = () => {
